@@ -1,7 +1,5 @@
 package com.chrystiancr.usermanagement;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.chrystiancr.usermanagement.user.UserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -62,25 +60,51 @@ class UserManagementApplicationTests {
     }
 
     @Test
-    void shouldRejectDuplicateEmail() throws Exception {
-        UserRequest request = new UserRequest("Ana", "ana@example.com");
-
+    void shouldReturnConflictWhenEmailAlreadyExistsIgnoringCase() throws Exception {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(
+                                new UserRequest("Ana", "ana-negative-test@example.com"))))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict());
+                        .content(objectMapper.writeValueAsString(
+                                new UserRequest("Outra Ana", "ANA-NEGATIVE-TEST@example.com"))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").exists());
     }
 
     @Test
-    void shouldRejectInvalidUser() throws Exception {
+    void shouldReturnBadRequestForInvalidUserFields() throws Exception {
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"\",\"email\":\"invalid\"}"))
+                        .content("{\"name\":\"\",\"email\":\"not-an-email\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
+        mockMvc.perform(get("/api/users/{id}", Long.MAX_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").exists());
+
+        mockMvc.perform(put("/api/users/{id}", Long.MAX_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new UserRequest("No existe", "missing-negative-test@example.com"))))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(delete("/api/users/{id}", Long.MAX_VALUE))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnBadRequestForMalformedJson() throws Exception {
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Ana\",\"email\":"))
                 .andExpect(status().isBadRequest());
     }
 }
