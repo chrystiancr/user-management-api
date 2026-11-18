@@ -1,5 +1,7 @@
 package com.chrystiancr.usermanagement.user;
 
+import com.chrystiancr.usermanagement.exception.EmailAlreadyExistsException;
+import com.chrystiancr.usermanagement.exception.UserNotFoundException;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;

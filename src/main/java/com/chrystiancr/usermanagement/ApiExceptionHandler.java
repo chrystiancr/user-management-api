@@ -1,7 +1,7 @@
 package com.chrystiancr.usermanagement;
 
-import com.chrystiancr.usermanagement.user.EmailAlreadyExistsException;
-import com.chrystiancr.usermanagement.user.UserNotFoundException;
+import com.chrystiancr.usermanagement.exception.EmailAlreadyExistsException;
+import com.chrystiancr.usermanagement.exception.UserNotFoundException;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
