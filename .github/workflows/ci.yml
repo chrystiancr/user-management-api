@@ -23,10 +23,16 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-          cache: gradle
 
-      - name: Make Gradle Wrapper executable
-        run: chmod +x gradlew
+      # The repository does not yet contain the Gradle Wrapper scripts/JAR.
+      # Bootstrap Gradle 8.14.3, generate the wrapper, then use it for the build.
+      - name: Set up Gradle 8.14.3
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.14.3
 
       - name: Build and test
         run: ./gradlew clean build
